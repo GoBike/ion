@@ -17,7 +17,7 @@ type Client struct {
 	// client is a HTTP client.
 	client *http.Client
 
-	// endpoint is a parsed URL. It knows where to hit a f***ing server.
+	// endpoint is a parsed URL. It knows where to hit a fucking server.
 	endpoint *url.URL
 
 	// method specifies HTTP verb.
@@ -34,6 +34,8 @@ func NewClient(verb string, endpoint *url.URL) *Client {
 
 	return c
 }
+
+type ClientOptions func(*Client)
 
 // Rpc supercharges/upgrades api.Api with a http-gun, which turns it into a
 // badass-RPC.

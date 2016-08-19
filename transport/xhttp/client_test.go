@@ -58,7 +58,3 @@ func TestBody(t *testing.T) {
 		t.Errorf("want: %s, got: %s", testbody, resp)
 	}
 }
-
-func TestVerb(t *testing.T) {
-
-}

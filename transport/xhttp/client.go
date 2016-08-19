@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"golang.org/x/net/context/ctxhttp"
+
 	"github.com/gobike/ion/api"
 )
 
@@ -21,28 +23,61 @@ type Client struct {
 	endpoint *url.URL
 
 	// method specifies HTTP verb.
-	verb string
+	method string
+
+	enc EncodeRequestFunc
+	dec DecodeResponseFunc
 }
 
 // NewClient contructs an usable Client for a single remote method.
-func NewClient(verb string, endpoint *url.URL) *Client {
+func NewClient(method string, endpoint *url.URL, enc EncodeRequestFunc, dec DecodeResponseFunc) *Client {
 
 	c := &Client{
 		endpoint: endpoint,
-		verb:     verb,
+		method:   method,
+		enc:      enc,
+		dec:      dec,
 	}
 
 	return c
 }
-
-type ClientOptions func(*Client)
 
 // Rpc supercharges/upgrades api.Api with a http-gun, which turns it into a
 // badass-RPC.
 //
 // Now, it can fire http-request.
 func (c Client) Rpc() api.Api {
-	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		return nil, nil
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		var req *http.Request
+		var resp *http.Response
+
+		var err error
+
+		// first, make sure its cancellable.
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		// second, aim to your target
+		if req, err = http.NewRequest(c.method, c.endpoint.String(), nil); err != nil {
+			return nil, Error{PhaseDo, err}
+		}
+
+		// third, fillup bullets
+		if err = c.enc(ctx, req, request); err != nil {
+			return nil, Error{PhaseEncode, err}
+		}
+
+		// next, fire!
+		if resp, err = ctxhttp.Do(ctx, c.client, req); err != nil {
+			return nil, Error{PhaseDo, err}
+		}
+
+		// finally, obtain output.
+		var response interface{}
+		if response, err = c.dec(ctx, resp); err != nil {
+			return nil, Error{PhaseDecode, err}
+		}
+
+		return response, nil
 	}
 }

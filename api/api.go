@@ -11,6 +11,6 @@ import "context"
 // In functional-programming world, we call superCharge. You supercharge with
 // http-details, you get a f***ing gun that capable of firing http-bullets.
 //
-// For pals coming from OOP world, you may consider this as a mini-version of
-// interface, implement first before actual usage.
+// For OOP pals, you may consider this as a mini-version of interface, rule's
+// the same: implement first before actual usage.
 type Api func(ctx context.Context, request interface{}) (response interface{}, err error)

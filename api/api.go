@@ -9,5 +9,5 @@ import "context"
 // to build a gun, you need to implement the details.
 //
 // In functional-programming term, we call superCharge. You supercharge with http-details,
-// you get a fucking gun that capable of firing http-bullets. Pretty cool, huh. ;)
+// you get a f***ing gun that capable of firing http-bullets. Pretty cool, huh. ;)
 type Api func(ctx context.Context, request interface{}) (response interface{}, err error)

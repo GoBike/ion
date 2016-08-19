@@ -17,7 +17,7 @@ type Client struct {
 	// client is a HTTP client.
 	client *http.Client
 
-	// endpoint is a parsed URL. It knows where to hit a fucking server.
+	// endpoint is a parsed URL. It knows where to hit a f***ing server.
 	endpoint *url.URL
 
 	// method specifies HTTP verb.

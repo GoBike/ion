@@ -1,37 +1,62 @@
 package xhttp
 
 import (
-	"fmt"
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
 /*
 Basically, its pretty repetitive when it comes to testing a http-client.
-  1. Setup a mocked-server, along with handlers. - expected output
-  2. RPC to mocked-server, with mocked-server-url. - input
+  1. Setup a mocked-server.
+  2. Create a bunch of handlers. this will be your expected output.
+  3. RPC to mocked-server, via mocked-server-url. - input
 */
 
-func TestIntegration(t *testing.T) {
+// plainTextBodyHandler writes plain-text data w/o fancy encoding. i.e.: json.
+type plainTextBodyHandler string
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "hello client!")
-	}))
+func (b plainTextBodyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.Write([]byte(b))
+}
+
+func TestBody(t *testing.T) {
+
+	var (
+		testbody = "testbody"
+		enc      = func(context.Context, *http.Request, interface{}) error { return nil }
+		dec      = func(_ context.Context, r *http.Response) (interface{}, error) {
+
+			buffer := make([]byte, len(testbody))
+			_, err := r.Body.Read(buffer)
+
+			if err != nil && err != io.EOF {
+				return nil, err
+			}
+			return string(buffer), nil
+		}
+	)
+
+	ts := httptest.NewServer(plainTextBodyHandler(testbody))
 	defer ts.Close()
-	res, err := http.Get(ts.URL)
+	u, _ := url.Parse(ts.URL)
 
+	httpclient := NewClient("", u, enc, dec)
+
+	resp, err := httpclient.Rpc()(context.Background(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	greeting, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		log.Fatal(err)
+	if resp != testbody {
+		t.Errorf("want: %s, got: %s", testbody, resp)
 	}
-	fmt.Printf("%s", greeting)
+}
+
+func TestVerb(t *testing.T) {
 
 }

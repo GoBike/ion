@@ -31,14 +31,19 @@ type Client struct {
 }
 
 // NewClient contructs an usable Client for a single remote method.
-func NewClient(method string, endpoint *url.URL, enc EncodeRequestFunc, dec DecodeResponseFunc) *Client {
+func NewClient(method string, endpoint *url.URL, enc EncodeRequestFunc, dec DecodeResponseFunc, options ...ClientOption) *Client {
 
 	c := &Client{
+		client:   http.DefaultClient,
 		endpoint: endpoint,
 		method:   method,
 		enc:      enc,
 		dec:      dec,
 		before:   []RequestFunc{},
+	}
+
+	for _, option := range options {
+		option(c)
 	}
 
 	return c

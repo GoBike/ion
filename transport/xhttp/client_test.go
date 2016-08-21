@@ -26,7 +26,7 @@ func (b plainTextBodyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request
 
 // start a mocked server, add a handler that writes plain-text into
 // http-response's Body. Expect decoder returns same plain-text as response.
-func TestBody(t *testing.T) {
+func TestDecodePlainTextResponse(t *testing.T) {
 
 	var (
 		testbody = "testbody"

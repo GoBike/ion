@@ -70,6 +70,12 @@ func TestNoBefore(t *testing.T) {
 	fmt.Println("todo: TestNoBefore")
 }
 
+// start a mocked server, client send a request with 2 before option. expects
+// server to receive them both.
+func TestTwoBefore(t *testing.T) {
+	fmt.Println("todo: TestTwoBefore")
+}
+
 // start mocked server, SetRequestHeader to before, client send request.
 // exptects server receives header info.
 func TestOneBefore(t *testing.T) {
@@ -91,7 +97,11 @@ func TestOneBefore(t *testing.T) {
 
 	client := NewClient("", turl, enc, dec)
 	client.SetBefore(SetRequestHeader(key, value))
-	client.Rpc()(context.Background(), nil)
+	_, err := client.Rpc()(context.Background(), nil)
+
+	if err != nil {
+		t.FailNow()
+	}
 
 	select {
 	case got := <-eavesdrop:

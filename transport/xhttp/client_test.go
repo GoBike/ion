@@ -71,6 +71,7 @@ func TestNoBefore(t *testing.T) {
 }
 
 // start mocked server, SetRequestHeader to before, client send request.
+// exptects server receives header info.
 func TestOneBefore(t *testing.T) {
 
 	var (

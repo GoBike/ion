@@ -82,6 +82,9 @@ func (c Client) Rpc() api.Api {
 			return nil, Error{PhaseDo, err}
 		}
 
+		// todo: with buffered-stream, this is false.
+		defer resp.Body.Close()
+
 		// finally, obtain output.
 		var response interface{}
 		if response, err = c.dec(ctx, resp); err != nil {

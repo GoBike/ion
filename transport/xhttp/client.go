@@ -49,6 +49,11 @@ func (c *Client) SetBefore(f ...RequestFunc) {
 	c.before = f
 }
 
+// SetClient sets HTTP client.
+func (c *Client) SetClient(client *http.Client) {
+	c.client = client
+}
+
 // Rpc supercharges/upgrades api.Api with a http-gun, which turns it into a
 // badass-RPC.
 //

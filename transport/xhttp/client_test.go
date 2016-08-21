@@ -96,7 +96,7 @@ func TestOneBefore(t *testing.T) {
 	turl, _ := url.Parse(ts.URL)
 
 	client := NewClient("", turl, enc, dec)
-	client.SetBefore(SetRequestHeader(key, value))
+	SetBefore(SetRequestHeader(key, value))(client)
 	_, err := client.Rpc()(context.Background(), nil)
 
 	if err != nil {

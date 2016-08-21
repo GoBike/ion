@@ -44,9 +44,21 @@ func NewClient(method string, endpoint *url.URL, enc EncodeRequestFunc, dec Deco
 	return c
 }
 
-// SetBefore sets >= 1 RequestFunc f to before
-func (c *Client) SetBefore(f ...RequestFunc) {
-	c.before = f
+// ClientOption is a callback that allows client configs on private attributes.
+type ClientOption func(*Client)
+
+// SetBefore supercharges ClientOption to set >= 1 RequestFunc f to before
+func SetBefore(before ...RequestFunc) ClientOption {
+	return func(c *Client) {
+		c.before = before
+	}
+}
+
+//SetClient supercharges ClientOption to set HTTP client.
+func SetClient(client *http.Client) ClientOption {
+	return func(c *Client) {
+		c.client = client
+	}
 }
 
 // SetClient sets HTTP client.

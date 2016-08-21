@@ -25,8 +25,9 @@ type Client struct {
 	// method specifies HTTP verb.
 	method string
 
-	enc EncodeRequestFunc
-	dec DecodeResponseFunc
+	enc    EncodeRequestFunc
+	dec    DecodeResponseFunc
+	before []RequestFunc
 }
 
 // NewClient contructs an usable Client for a single remote method.
@@ -37,9 +38,15 @@ func NewClient(method string, endpoint *url.URL, enc EncodeRequestFunc, dec Deco
 		method:   method,
 		enc:      enc,
 		dec:      dec,
+		before:   []RequestFunc{},
 	}
 
 	return c
+}
+
+// SetBefore sets >= 1 RequestFunc f to before
+func (c *Client) SetBefore(f ...RequestFunc) {
+	c.before = f
 }
 
 // Rpc supercharges/upgrades api.Api with a http-gun, which turns it into a
@@ -65,6 +72,9 @@ func (c Client) Rpc() api.Api {
 		// third, fillup bullets
 		if err = c.enc(ctx, req, request); err != nil {
 			return nil, Error{PhaseEncode, err}
+		}
+		for _, f := range c.before {
+			ctx = f(ctx, req)
 		}
 
 		// next, fire!

@@ -2,13 +2,19 @@ package xhttp
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 )
+
+// Most test req/resp scheduled to run at 1 millisecond mark.
+// Test expects to fail after TimeOut
+const TimeOut = 1 * time.Millisecond
 
 /*
 Basically, its pretty repetitive when it comes to testing a http-client.
@@ -30,7 +36,7 @@ func TestDecodePlainTextResponse(t *testing.T) {
 
 	var (
 		testbody = "testbody"
-		enc      = func(context.Context, *http.Request, interface{}) error { return nil }
+		enc      = NopEncodeRequest()
 		dec      = func(_ context.Context, r *http.Response) (interface{}, error) {
 
 			buffer := make([]byte, len(testbody))
@@ -45,9 +51,9 @@ func TestDecodePlainTextResponse(t *testing.T) {
 
 	ts := httptest.NewServer(plainTextBodyHandler(testbody))
 	defer ts.Close()
-	u, _ := url.Parse(ts.URL)
+	turl, _ := url.Parse(ts.URL)
 
-	httpclient := NewClient("", u, enc, dec)
+	httpclient := NewClient("", turl, enc, dec)
 
 	resp, err := httpclient.Rpc()(context.Background(), nil)
 	if err != nil {
@@ -56,5 +62,56 @@ func TestDecodePlainTextResponse(t *testing.T) {
 
 	if resp != testbody {
 		t.Errorf("want: %s, got: %s", testbody, resp)
+	}
+}
+
+// start a mocked server, client send a request without header, expects no error.
+func TestNoBefore(t *testing.T) {
+	fmt.Println("todo: TestNoBefore")
+}
+
+// start mocked server, SetRequestHeader to before, client send request.
+func TestOneBefore(t *testing.T) {
+
+	var (
+		eavesdrop = make(chan string, 1)
+		key       = "x-gobike-foo"
+		value     = "bar"
+		enc       = NopEncodeRequest()
+		dec       = NopDecodeResponse()
+	)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		eavesdrop <- r.Header.Get(key)
+	}))
+	defer ts.Close()
+
+	turl, _ := url.Parse(ts.URL)
+
+	client := NewClient("", turl, enc, dec)
+	client.SetBefore(SetRequestHeader(key, value))
+	client.Rpc()(context.Background(), nil)
+
+	select {
+	case got := <-eavesdrop:
+		if want := value; got != want {
+			t.FailNow()
+		}
+	case <-time.After(TimeOut):
+		t.FailNow()
+	}
+}
+
+// NopEncodeRequest superchages EncodeRequestFunc with NOP! (for testing)
+func NopEncodeRequest() EncodeRequestFunc {
+	return func(context.Context, *http.Request, interface{}) error {
+		return nil
+	}
+}
+
+// NopDecodeResponse superchages DecodeResponseFunc with NOP! (for testing)
+func NopDecodeResponse() DecodeResponseFunc {
+	return func(context.Context, *http.Response) (interface{}, error) {
+		return nil, nil
 	}
 }

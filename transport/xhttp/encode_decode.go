@@ -29,9 +29,10 @@ func NopDecodeResponse() DecodeResponseFunc {
 	}
 }
 
-// StatusDecodeResponse is a ion./xhttp.DecodeRequestFunc that
+// StatusOKDecodeResponse is a ion./xhttp.DecodeRequestFunc that
 // check if statuscode == 200
 func StatusOKDecodeResponse() DecodeResponseFunc {
-	return func (_ context.Context, r *http.Response) (interface{}, error) {
-	return r.StatusCode == http.StatusOK, nil
+	return func(_ context.Context, r *http.Response) (interface{}, error) {
+		return r.StatusCode == http.StatusOK, nil
+	}
 }

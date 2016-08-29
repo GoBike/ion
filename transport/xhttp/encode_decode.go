@@ -1,7 +1,10 @@
 package xhttp
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -34,5 +37,18 @@ func NopDecodeResponse() DecodeResponseFunc {
 func StatusOKDecodeResponse() DecodeResponseFunc {
 	return func(_ context.Context, r *http.Response) (interface{}, error) {
 		return r.StatusCode == http.StatusOK, nil
+	}
+}
+
+// JSONEncodeRequest is a ion/xhttp.EncodeRequestFunc that
+// JSON-encodes any request to the request body. Primarily useful in a client.
+func JSONEncodeRequest() EncodeRequestFunc {
+	return func(_ context.Context, r *http.Request, request interface{}) error {
+		var buf bytes.Buffer
+		if err := json.NewEncoder(&buf).Encode(request); err != nil {
+			return err
+		}
+		r.Body = ioutil.NopCloser(&buf)
+		return nil
 	}
 }

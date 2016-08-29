@@ -14,3 +14,17 @@ type EncodeRequestFunc func(context.Context, *http.Request, interface{}) error
 // into outputs, alongside with additional info from context.Context,
 // if necessarily.
 type DecodeResponseFunc func(context.Context, *http.Response) (interface{}, error)
+
+// NopEncodeRequest superchages EncodeRequestFunc with NOP!
+func NopEncodeRequest() EncodeRequestFunc {
+	return func(context.Context, *http.Request, interface{}) error {
+		return nil
+	}
+}
+
+// NopDecodeResponse superchages DecodeResponseFunc with NOP!
+func NopDecodeResponse() DecodeResponseFunc {
+	return func(context.Context, *http.Response) (interface{}, error) {
+		return nil, nil
+	}
+}

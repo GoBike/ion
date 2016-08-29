@@ -111,17 +111,3 @@ func TestOneBefore(t *testing.T) {
 		t.FailNow()
 	}
 }
-
-// NopEncodeRequest superchages EncodeRequestFunc with NOP! (for testing)
-func NopEncodeRequest() EncodeRequestFunc {
-	return func(context.Context, *http.Request, interface{}) error {
-		return nil
-	}
-}
-
-// NopDecodeResponse superchages DecodeResponseFunc with NOP! (for testing)
-func NopDecodeResponse() DecodeResponseFunc {
-	return func(context.Context, *http.Response) (interface{}, error) {
-		return nil, nil
-	}
-}
